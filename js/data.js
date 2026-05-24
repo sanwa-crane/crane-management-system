@@ -44,16 +44,11 @@ const SAMPLE_MAINT = [
 const DataStore = {
 
   /* ============================================================
-     初期化：Firestoreが空ならサンプルデータを投入
+     初期化
      ============================================================ */
   async init() {
-    const snap = await db.collection('cranes').limit(1).get();
-    if (snap.empty) {
-      const batch = db.batch();
-      SAMPLE_CRANES.forEach(c => batch.set(db.collection('cranes').doc(c.id), c));
-      SAMPLE_MAINT.forEach(m => batch.set(db.collection('maintenance').doc(m.id), m));
-      await batch.commit();
-    }
+    // 本番データ保護のため、画面表示時のサンプルデータ自動投入は行いません。
+    // 初期データが必要な場合は、管理画面から明示的に登録してください。
   },
 
   /* ============================================================
