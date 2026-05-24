@@ -73,9 +73,14 @@ const DataStore = {
 
   async saveCrane(crane) {
     if (!crane.id) {
-      crane.id        = await this._generateCraneId();
+      const ref = db.collection('cranes').doc();
+      crane.id        = ref.id;
       crane.createdAt = new Date().toISOString();
+      crane.updatedAt = new Date().toISOString();
+      await ref.set(crane);
+      return crane;
     }
+
     crane.updatedAt = new Date().toISOString();
     await db.collection('cranes').doc(crane.id).set(crane);
     return crane;
@@ -202,12 +207,6 @@ const DataStore = {
      ユーティリティ
      ============================================================ */
 
-  async _generateCraneId() {
-    const cranes = await this.getCranes();
-    const nums   = cranes.map(c => parseInt(c.id.replace('CRANE-', ''), 10)).filter(n => !isNaN(n));
-    const max    = nums.length ? Math.max(...nums) : 0;
-    return 'CRANE-' + String(max + 1).padStart(3, '0');
-  },
 
   _generateId(prefix = 'ID') {
     return prefix + Date.now() + Math.random().toString(36).slice(2, 6).toUpperCase();
