@@ -3,7 +3,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  if (!Auth.requireAuth()) return;
+  if (!(await Auth.requireAuth())) return;
 
   /* ベースURLは常にGitHub Pages */
   document.getElementById('baseUrlInput').value = 'https://sanwa-crane.github.io/crane-management-system/';
@@ -36,10 +36,10 @@ async function generateAllQr() {
     const card = document.createElement('div');
     card.className = 'qr-card';
     card.innerHTML = `
-      <div class="qr-vehicle-number">${crane.vehicleNumber}</div>
-      <div class="qr-crane-name">${crane.name}</div>
+      <div class="qr-vehicle-number">${safeText(crane.vehicleNumber)}</div>
+      <div class="qr-crane-name">${safeText(crane.name, '')}</div>
       <div class="qr-code-wrap" id="qr-${crane.id}"></div>
-      <div style="font-size:var(--font-size-xs);color:var(--color-text-muted);margin-top:4px">${crane.id}</div>
+      <div style="font-size:var(--font-size-xs);color:var(--color-text-muted);margin-top:4px">${escapeHtml(crane.id)}</div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:var(--sp-sm)" class="no-print">
         <button class="btn btn-sm btn-outline" onclick="downloadSingleQr('${crane.id}')">
           <i class="fas fa-download"></i> 保存

@@ -47,6 +47,12 @@ const DataStore = {
      初期化：Firestoreが空ならサンプルデータを投入
      ============================================================ */
   async init() {
+    await this._ensureSignedIn();
+
+    // サンプル投入は管理者ログイン時だけ行います。匿名の現場端末からは書き込みません。
+    const user = firebase.auth().currentUser;
+    if (!user || user.isAnonymous) return;
+
     const snap = await db.collection('cranes').limit(1).get();
     if (snap.empty) {
       const batch = db.batch();
@@ -73,8 +79,12 @@ const DataStore = {
 
   async saveCrane(crane) {
     if (!crane.id) {
-      crane.id        = await this._generateCraneId();
+      const ref = db.collection('cranes').doc();
+      crane.id        = ref.id;
       crane.createdAt = new Date().toISOString();
+      crane.updatedAt = new Date().toISOString();
+      await ref.set(crane);
+      return crane;
     }
     crane.updatedAt = new Date().toISOString();
     await db.collection('cranes').doc(crane.id).set(crane);
@@ -82,11 +92,15 @@ const DataStore = {
   },
 
   async deleteCrane(id) {
-    await db.collection('cranes').doc(id).delete();
-    /* 紐づくメンテナンス記録も削除 */
-    const snap = await db.collection('maintenance').where('craneId', '==', id).get();
     const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(db.collection('cranes').doc(id));
+
+    const collections = ['maintenance', 'inspections', 'repairs'];
+    for (const name of collections) {
+      const snap = await db.collection(name).where('craneId', '==', id).get();
+      snap.docs.forEach(d => batch.delete(d.ref));
+    }
+
     await batch.commit();
   },
 
@@ -201,6 +215,11 @@ const DataStore = {
   /* ============================================================
      ユーティリティ
      ============================================================ */
+
+  async _ensureSignedIn() {
+    if (!window.firebase?.auth || firebase.auth().currentUser) return;
+    await firebase.auth().signInAnonymously();
+  },
 
   async _generateCraneId() {
     const cranes = await this.getCranes();

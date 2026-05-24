@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    match /cranes/{craneId} {
+      allow get: if signedIn();
+      allow list, create, update, delete: if isAdmin();
+    }
+
+    match /maintenance/{recordId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.craneId is string;
+      allow update, delete: if isAdmin();
+    }
+
+    match /inspections/{recordId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.craneId is string;
+      allow update, delete: if isAdmin();
+    }
+
+    match /repairs/{recordId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.craneId is string;
+      allow update, delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

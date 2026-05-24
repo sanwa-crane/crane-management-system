@@ -23,12 +23,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('craneInfo').innerHTML = `
       <div class="crane-info-card">
-        <div class="crane-vehicle-number"><i class="fas fa-id-card"></i> ${crane.vehicleNumber}</div>
-        <div class="crane-name-display">${crane.tonnage || crane.name || ''}</div>
+        <div class="crane-vehicle-number"><i class="fas fa-id-card"></i> ${safeText(crane.vehicleNumber)}</div>
+        <div class="crane-name-display">${safeText(crane.tonnage || crane.name, '')}</div>
         <div class="crane-meta">
-          ${crane.maker ? `<div class="crane-meta-item"><i class="fas fa-industry"></i> ${crane.maker}</div>` : ''}
-          <div class="crane-meta-item"><i class="fas fa-cogs"></i> ${crane.model || '—'}</div>
-          ${crane.notes ? `<div class="crane-meta-item"><i class="fas fa-sticky-note"></i> ${crane.notes}</div>` : ''}
+          ${crane.maker ? `<div class="crane-meta-item"><i class="fas fa-industry"></i> ${safeText(crane.maker)}</div>` : ''}
+          <div class="crane-meta-item"><i class="fas fa-cogs"></i> ${safeText(crane.model)}</div>
+          ${crane.notes ? `<div class="crane-meta-item"><i class="fas fa-sticky-note"></i> ${safeText(crane.notes)}</div>` : ''}
         </div>
       </div>`;
 
@@ -48,6 +48,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 function showError(msg) {
   document.getElementById('loadingEl').classList.add('hidden');
   document.getElementById('craneContent').innerHTML =
-    `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i>${msg}</div>`;
+    `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i>${escapeHtml(msg)}</div>`;
   document.getElementById('craneContent').classList.remove('hidden');
 }
