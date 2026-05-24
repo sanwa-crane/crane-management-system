@@ -137,7 +137,7 @@ async function saveCrane(craneId) {
 
 function deleteCrane(craneId) {
   DataStore.getCrane(craneId).then(crane => {
-    showConfirm(`「${crane.vehicleNumber}」を削除しますか？<br>紐づくメンテナンス記録もすべて削除されます。`, async () => {
+    showConfirm(`「${crane.vehicleNumber}」を削除しますか？<br>紐づくメンテナンス・点検・修理記録もすべて削除されます。`, async () => {
       await DataStore.deleteCrane(craneId);
       showToast('クレーンを削除しました', 'success');
       await renderCranes();

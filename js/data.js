@@ -82,11 +82,16 @@ const DataStore = {
   },
 
   async deleteCrane(id) {
-    await db.collection('cranes').doc(id).delete();
-    /* 紐づくメンテナンス記録も削除 */
-    const snap = await db.collection('maintenance').where('craneId', '==', id).get();
     const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(db.collection('cranes').doc(id));
+
+    /* 紐づくメンテナンス・点検・修理記録も削除 */
+    const relatedCollections = ['maintenance', 'inspections', 'repairs'];
+    for (const collectionName of relatedCollections) {
+      const snap = await db.collection(collectionName).where('craneId', '==', id).get();
+      snap.docs.forEach(d => batch.delete(d.ref));
+    }
+
     await batch.commit();
   },
 
