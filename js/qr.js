@@ -37,7 +37,7 @@ async function generateAllQr() {
     card.className = 'qr-card';
     card.innerHTML = `
       <div class="qr-vehicle-number">${crane.vehicleNumber}</div>
-      <div class="qr-crane-name">${crane.name}</div>
+      <div class="qr-crane-name">${crane.tonnage || ''}</div>
       <div class="qr-code-wrap" id="qr-${crane.id}"></div>
       <div style="font-size:var(--font-size-xs);color:var(--color-text-muted);margin-top:4px">${crane.id}</div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:var(--sp-sm)" class="no-print">
