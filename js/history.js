@@ -113,11 +113,11 @@ function buildItemHtml(r) {
           <div class="history-detail-item"><span class="history-detail-label">次回予定</span>
             <span>${formatDate(r.nextDate)} <span class="badge ${st.badgeCls}">${st.label}</span></span>
           </div>
-          <div class="history-detail-item"><span class="history-detail-label">担当者</span><span>${safeText(r.operator)}</span></div>
-          ${r.quantity ? `<div class="history-detail-item"><span class="history-detail-label">使用数量</span><span>${safeText(r.quantity)}</span></div>` : ''}
+          <div class="history-detail-item"><span class="history-detail-label">担当者</span><span>${r.operator || '—'}</span></div>
+          ${r.quantity ? `<div class="history-detail-item"><span class="history-detail-label">使用数量</span><span>${r.quantity}</span></div>` : ''}
           ${r.odometer  ? `<div class="history-detail-item"><span class="history-detail-label">オドメーター</span><span>${r.odometer.toLocaleString()} km</span></div>` : ''}
           ${r.hourMeter ? `<div class="history-detail-item"><span class="history-detail-label">アワメーター</span><span>${r.hourMeter.toLocaleString()} h</span></div>` : ''}
-          ${r.notes ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">備考</span><span>${safeText(r.notes)}</span></div>` : ''}
+          ${r.notes ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">備考</span><span>${r.notes}</span></div>` : ''}
         </div>
       </div>`;
   }
@@ -150,11 +150,11 @@ function buildItemHtml(r) {
         <div class="history-details">
           <div class="history-detail-item"><span class="history-detail-label">点検日</span><span>${formatDate(r.date)}</span></div>
           ${sectionLabel ? `<div class="history-detail-item"><span class="history-detail-label">部位</span><span>${sectionLabel}</span></div>` : ''}
-          <div class="history-detail-item"><span class="history-detail-label">担当者</span><span>${safeText(r.operator)}</span></div>
+          <div class="history-detail-item"><span class="history-detail-label">担当者</span><span>${r.operator || '—'}</span></div>
           ${r.odometer  ? `<div class="history-detail-item"><span class="history-detail-label">オドメーター</span><span>${r.odometer.toLocaleString()} km</span></div>` : ''}
           ${r.hourMeter ? `<div class="history-detail-item"><span class="history-detail-label">アワメーター</span><span>${r.hourMeter.toLocaleString()} h</span></div>` : ''}
-          <div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">点検項目</span><span>${escapeHtml(itemSummary)}</span></div>
-          ${r.notes ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">備考</span><span>${safeText(r.notes)}</span></div>` : ''}
+          <div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">点検項目</span><span>${itemSummary}</span></div>
+          ${r.notes ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">備考</span><span>${r.notes}</span></div>` : ''}
         </div>
       </div>`;
   }
@@ -166,7 +166,7 @@ function buildItemHtml(r) {
         <div class="history-item-header">
           <div class="history-type">
             <span class="badge badge-danger" style="margin-right:4px">修理</span>
-            <i class="fas fa-tools"></i>${safeText(r.faultLocation, '修理記録')}
+            <i class="fas fa-tools"></i>${r.faultLocation || '修理記録'}
           </div>
           <button class="btn btn-sm btn-danger btn-icon"
                   onclick="confirmDelete('repair','${r.id}')"
@@ -176,10 +176,10 @@ function buildItemHtml(r) {
         </div>
         <div class="history-details">
           <div class="history-detail-item"><span class="history-detail-label">修理日</span><span>${formatDate(r.date)}</span></div>
-          <div class="history-detail-item"><span class="history-detail-label">担当者</span><span>${safeText(r.operator)}</span></div>
-          ${r.replacedParts ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">交換部品</span><span>${safeText(r.replacedParts)}</span></div>` : ''}
-          ${r.countermeasure ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">対策</span><span>${safeText(r.countermeasure)}</span></div>` : ''}
-          ${r.notes ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">備考</span><span>${safeText(r.notes)}</span></div>` : ''}
+          <div class="history-detail-item"><span class="history-detail-label">担当者</span><span>${r.operator || '—'}</span></div>
+          ${r.replacedParts ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">交換部品</span><span>${r.replacedParts}</span></div>` : ''}
+          ${r.countermeasure ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">対策</span><span>${r.countermeasure}</span></div>` : ''}
+          ${r.notes ? `<div class="history-detail-item" style="flex-basis:100%"><span class="history-detail-label">備考</span><span>${r.notes}</span></div>` : ''}
         </div>
       </div>`;
   }
@@ -206,5 +206,5 @@ function confirmDelete(recordType, recordId) {
 
 function showPageError(msg) {
   document.getElementById('historyContent').innerHTML =
-    `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i>${escapeHtml(msg)}</div>`;
+    `<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i>${msg}</div>`;
 }

@@ -3,7 +3,7 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  if (!(await Auth.requireAuth())) return;
+  if (!Auth.requireAuth()) return;
 
   try {
     await DataStore.init();
@@ -70,9 +70,9 @@ async function renderCraneList() {
 
     return `<tr>
       <td><strong>${crane.id}</strong></td>
-      <td>${safeText(crane.vehicleNumber)}</td>
-      <td>${safeText(crane.model)}</td>
-      <td>${safeText(crane.location)}</td>
+      <td>${crane.vehicleNumber}</td>
+      <td>${crane.model || '—'}</td>
+      <td>${crane.location || '—'}</td>
       <td>${lastDate ? formatDate(lastDate) : '—'}</td>
       <td>${statusBadge}</td>
       <td><a href="admin-crane.html?id=${crane.id}" class="btn btn-sm btn-outline"><i class="fas fa-eye"></i> 詳細</a></td>

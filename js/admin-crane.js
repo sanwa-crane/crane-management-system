@@ -5,7 +5,7 @@
 let currentCraneId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  if (!(await Auth.requireAuth())) return;
+  if (!Auth.requireAuth()) return;
 
   currentCraneId = getUrlParam('id');
   if (!currentCraneId) { window.location.href = 'admin-cranes.html'; return; }
@@ -60,7 +60,7 @@ async function loadMaintenanceRecords() {
   const tbody   = document.getElementById('maintTableBody');
 
   if (records.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted" style="padding:24px">記録がありません</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted" style="padding:24px">記録がありません</td></tr>`;
     return;
   }
 
@@ -74,8 +74,8 @@ async function loadMaintenanceRecords() {
       <td>${sectionLabel}</td>
       <td>${formatDate(r.date)}</td>
       <td>${formatDate(r.nextDate)} <span class="badge ${st.badgeCls}">${st.label}</span></td>
-      <td>${safeText(r.operator)}</td>
-      <td>${safeText(r.notes)}</td>
+      <td>${r.operator || '—'}</td>
+      <td>${r.notes || '—'}</td>
       <td>
         <div style="display:flex;gap:6px">
           <button class="btn btn-sm btn-outline" onclick="openMaintModal('${r.id}')"><i class="fas fa-edit"></i></button>
@@ -129,11 +129,11 @@ async function openMaintModal(recordId) {
           </div>
           <div class="form-group">
             <label class="form-label">担当者 <span class="required">*</span></label>
-            <input type="text" class="form-control" id="mOperator" value="${escapeAttr(rec ? (rec.operator || '') : '')}" placeholder="担当者名" required>
+            <input type="text" class="form-control" id="mOperator" value="${rec ? (rec.operator || '') : ''}" placeholder="担当者名" required>
           </div>
           <div class="form-group" id="quantityGroup">
             <label class="form-label">使用数量</label>
-            <input type="text" class="form-control" id="mQuantity" value="${escapeAttr(rec ? (rec.quantity || '') : '')}" placeholder="例：15L">
+            <input type="text" class="form-control" id="mQuantity" value="${rec ? (rec.quantity || '') : ''}" placeholder="例：15L">
           </div>
           <div class="grid grid-2" style="gap:var(--sp-md)">
             <div class="form-group" style="margin-bottom:0">
@@ -147,7 +147,7 @@ async function openMaintModal(recordId) {
           </div>
           <div class="form-group" style="margin-top:var(--sp-md)">
             <label class="form-label">備考</label>
-            <textarea class="form-control" id="mNotes" rows="3">${escapeHtml(rec ? (rec.notes || '') : '')}</textarea>
+            <textarea class="form-control" id="mNotes" rows="3">${rec ? (rec.notes || '') : ''}</textarea>
           </div>
         </form>
       </div>
@@ -238,7 +238,7 @@ async function loadInspectionRecords() {
       <td>${formatDate(r.date)}</td>
       <td>${sectionLabel}</td>
       <td style="font-size:var(--font-size-xs);line-height:1.8">${itemSummary}</td>
-      <td>${safeText(r.operator)}</td>
+      <td>${r.operator || '—'}</td>
       <td>
         <div style="display:flex;gap:6px">
           <button class="btn btn-sm btn-outline" onclick="openInspectionModal('${r.id}')"><i class="fas fa-edit"></i></button>
@@ -280,7 +280,7 @@ async function openInspectionModal(recordId) {
           </div>
           <div class="form-group">
             <label class="form-label">担当者 <span class="required">*</span></label>
-            <input type="text" class="form-control" id="iOperator" value="${escapeAttr(rec ? (rec.operator || '') : '')}" placeholder="担当者名" required>
+            <input type="text" class="form-control" id="iOperator" value="${rec ? (rec.operator || '') : ''}" placeholder="担当者名" required>
           </div>
           <div class="form-group">
             <label class="form-label">部位 <span class="required">*</span></label>
@@ -322,7 +322,7 @@ async function openInspectionModal(recordId) {
           </div>
           <div class="form-group" style="margin-top:var(--sp-md)">
             <label class="form-label">備考</label>
-            <textarea class="form-control" id="iNotes" rows="2">${escapeHtml(rec ? (rec.notes || '') : '')}</textarea>
+            <textarea class="form-control" id="iNotes" rows="2">${rec ? (rec.notes || '') : ''}</textarea>
           </div>
         </form>
       </div>
@@ -394,11 +394,11 @@ async function loadRepairRecords() {
 
   tbody.innerHTML = records.map(r => `<tr>
     <td>${formatDate(r.date)}</td>
-    <td><strong>${safeText(r.faultLocation)}</strong></td>
-    <td>${safeText(r.replacedParts)}</td>
-    <td style="max-width:200px;white-space:pre-wrap;font-size:var(--font-size-xs)">${safeText(r.countermeasure)}</td>
-    <td>${safeText(r.operator)}</td>
-    <td>${safeText(r.notes)}</td>
+    <td><strong>${r.faultLocation || '—'}</strong></td>
+    <td>${r.replacedParts || '—'}</td>
+    <td style="max-width:200px;white-space:pre-wrap;font-size:var(--font-size-xs)">${r.countermeasure || '—'}</td>
+    <td>${r.operator || '—'}</td>
+    <td>${r.notes || '—'}</td>
     <td>
       <div style="display:flex;gap:6px">
         <button class="btn btn-sm btn-outline" onclick="openRepairModal('${r.id}')"><i class="fas fa-edit"></i></button>
@@ -430,23 +430,23 @@ async function openRepairModal(recordId) {
           </div>
           <div class="form-group">
             <label class="form-label">担当者</label>
-            <input type="text" class="form-control" id="rOperator" value="${escapeAttr(rec ? (rec.operator || '') : '')}" placeholder="担当者名">
+            <input type="text" class="form-control" id="rOperator" value="${rec ? (rec.operator || '') : ''}" placeholder="担当者名">
           </div>
           <div class="form-group">
             <label class="form-label">故障箇所 <span class="required">*</span></label>
-            <input type="text" class="form-control" id="rFaultLocation" value="${escapeAttr(rec ? (rec.faultLocation || '') : '')}" placeholder="例：エンジン冷却系" required>
+            <input type="text" class="form-control" id="rFaultLocation" value="${rec ? (rec.faultLocation || '') : ''}" placeholder="例：エンジン冷却系" required>
           </div>
           <div class="form-group">
             <label class="form-label">交換部品</label>
-            <input type="text" class="form-control" id="rReplacedParts" value="${escapeAttr(rec ? (rec.replacedParts || '') : '')}" placeholder="例：ウォーターポンプ、Oリング">
+            <input type="text" class="form-control" id="rReplacedParts" value="${rec ? (rec.replacedParts || '') : ''}" placeholder="例：ウォーターポンプ、Oリング">
           </div>
           <div class="form-group">
             <label class="form-label">対策</label>
-            <textarea class="form-control" id="rCountermeasure" rows="3" placeholder="実施した対策内容を記入">${escapeHtml(rec ? (rec.countermeasure || '') : '')}</textarea>
+            <textarea class="form-control" id="rCountermeasure" rows="3" placeholder="実施した対策内容を記入">${rec ? (rec.countermeasure || '') : ''}</textarea>
           </div>
           <div class="form-group">
             <label class="form-label">備考</label>
-            <textarea class="form-control" id="rNotes" rows="2" placeholder="特記事項">${escapeHtml(rec ? (rec.notes || '') : '')}</textarea>
+            <textarea class="form-control" id="rNotes" rows="2" placeholder="特記事項">${rec ? (rec.notes || '') : ''}</textarea>
           </div>
         </form>
       </div>

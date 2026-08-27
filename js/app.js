@@ -56,28 +56,6 @@ function getDateStatus(days) {
   return              { label: `残${days}日`,             cls: 'text-success', badgeCls: 'badge-success' };
 }
 
-
-/** HTML本文へ安全に表示する */
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, ch => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#39;',
-  }[ch]));
-}
-
-/** HTML属性値へ安全に埋め込む */
-function escapeAttr(value) {
-  return escapeHtml(value);
-}
-
-function safeText(value, fallback = '—') {
-  const text = String(value ?? '').trim();
-  return text ? escapeHtml(text) : fallback;
-}
-
 /* ─────────────────────────────────────────── */
 
 /** トースト通知コンテナを取得（なければ生成） */
@@ -104,7 +82,7 @@ function showToast(message, type = 'info', duration = 3000) {
   const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
   const toast  = document.createElement('div');
   toast.className  = `toast toast-${type}`;
-  toast.innerHTML  = `<span>${icons[type] || 'ℹ️'}</span><span>${escapeHtml(message)}</span>`;
+  toast.innerHTML  = `<span>${icons[type] || 'ℹ️'}</span><span>${message}</span>`;
   container.appendChild(toast);
 
   if (duration > 0) {
@@ -160,7 +138,7 @@ function renderHeader(el, subtitle = '', isAdmin = false) {
   el.innerHTML = `
     <a class="header-brand" href="${isAdmin ? 'admin-dashboard.html' : '#'}">
       <img class="header-logo"
-           src="https://sanwa-crane.github.io/crane-management-system/assets/logo4.png"
+           src="http://sanwacrane.jp/images/logo4.png"
            alt="サンワクレーン"
            onerror="this.style.display='none'">
       <div class="header-brand-text">
