@@ -134,6 +134,17 @@ async saveCrane(crane) {
 
 ---
 
+## Firebase セキュリティ設定
+
+この版は Firestore と Firebase Authentication を使用します。公開前に Firebase コンソールで次を設定してください。
+
+1. Authentication で「メール/パスワード」と「匿名」を有効化
+2. 管理者用ユーザーを1件作成
+3. Firestore Rules に `firestore.rules` をデプロイ
+
+管理者画面はメール/パスワードログインのみ許可します。現場QRページは匿名ログインで必要最小限の記録追加を行います。
+
+
 ## 使用ライブラリ
 
 | ライブラリ | 用途 |

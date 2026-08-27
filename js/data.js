@@ -21,39 +21,15 @@ const MAINT_TYPES = [
   { key: 'other',                  label: 'その他',                           icon: 'fa-wrench'           },
 ];
 
-/* ─── サンプルデータ ─── */
-const SAMPLE_CRANES = [
-  { id: 'CRANE-001', vehicleNumber: '奈良100 あ 1234', maker: 'タダノ',   tonnage: '25t', model: 'GR-250N',  status: 'active', notes: '定期点検済み', createdAt: '2024-01-10T09:00:00.000Z' },
-  { id: 'CRANE-002', vehicleNumber: '奈良100 い 5678', maker: 'タダノ',   tonnage: '50t', model: 'GR-500N',  status: 'active', notes: '',            createdAt: '2024-01-10T09:00:00.000Z' },
-  { id: 'CRANE-003', vehicleNumber: '奈良100 う 9012', maker: 'コベルコ', tonnage: '16t', model: 'TG-1600M', status: 'active', notes: 'タイヤ要経過観察', createdAt: '2024-01-10T09:00:00.000Z' },
-];
-
-const SAMPLE_MAINT = [
-  { id: 'M001', craneId: 'CRANE-001', type: 'engine_oil',    date: '2026-02-15', nextDate: '2026-05-15', operator: '山田太郎', notes: '異常なし',        quantity: '15L', createdAt: '2026-02-15T10:00:00.000Z' },
-  { id: 'M002', craneId: 'CRANE-001', type: 'coolant',       date: '2026-01-20', nextDate: '2026-07-20', operator: '山田太郎', notes: 'LLC濃度確認済み', createdAt: '2026-01-20T14:00:00.000Z' },
-  { id: 'M003', craneId: 'CRANE-001', type: 'tire_pressure', date: '2026-03-10', nextDate: '2026-04-10', operator: '鈴木一郎', notes: '', tirePressures: { fl:'700', fr:'700', rl:'720', rr:'710' }, createdAt: '2026-03-10T08:30:00.000Z' },
-  { id: 'M004', craneId: 'CRANE-002', type: 'engine_oil',    date: '2026-01-05', nextDate: '2026-04-05', operator: '佐藤次郎', notes: 'オイル漏れなし', quantity: '20L', createdAt: '2026-01-05T09:00:00.000Z' },
-  { id: 'M005', craneId: 'CRANE-002', type: 'tire_pressure', date: '2026-03-20', nextDate: '2026-04-20', operator: '佐藤次郎', notes: 'FL若干低め、補充済み', tirePressures: { fl:'680', fr:'700', rl:'700', rr:'700' }, createdAt: '2026-03-20T09:00:00.000Z' },
-  { id: 'M006', craneId: 'CRANE-003', type: 'engine_oil',    date: '2025-11-10', nextDate: '2026-02-10', operator: '田中花子', notes: '', quantity: '12L', createdAt: '2025-11-10T11:00:00.000Z' },
-  { id: 'M007', craneId: 'CRANE-003', type: 'coolant',       date: '2025-12-01', nextDate: '2026-06-01', operator: '田中花子', notes: 'LLC補充のみ', createdAt: '2025-12-01T13:00:00.000Z' },
-  { id: 'M008', craneId: 'CRANE-003', type: 'tire_pressure', date: '2026-03-25', nextDate: '2026-04-25', operator: '田中花子', notes: 'RR低下、補充済み', tirePressures: { fl:'700', fr:'700', rl:'700', rr:'660' }, createdAt: '2026-03-25T10:00:00.000Z' },
-];
-
-/* ─────────────────────────────────────────── */
-
 const DataStore = {
 
   /* ============================================================
-     初期化：Firestoreが空ならサンプルデータを投入
+     初期化：認証だけを行う
+     本番データ保護のため、サンプルデータの自動投入は行いません。
+     初期データが必要な場合は管理画面から明示的に登録してください。
      ============================================================ */
   async init() {
-    const snap = await db.collection('cranes').limit(1).get();
-    if (snap.empty) {
-      const batch = db.batch();
-      SAMPLE_CRANES.forEach(c => batch.set(db.collection('cranes').doc(c.id), c));
-      SAMPLE_MAINT.forEach(m => batch.set(db.collection('maintenance').doc(m.id), m));
-      await batch.commit();
-    }
+    await this._ensureSignedIn();
   },
 
   /* ============================================================
@@ -73,8 +49,12 @@ const DataStore = {
 
   async saveCrane(crane) {
     if (!crane.id) {
-      crane.id        = await this._generateCraneId();
+      const ref = db.collection('cranes').doc();
+      crane.id        = ref.id;
       crane.createdAt = new Date().toISOString();
+      crane.updatedAt = new Date().toISOString();
+      await ref.set(crane);
+      return crane;
     }
     crane.updatedAt = new Date().toISOString();
     await db.collection('cranes').doc(crane.id).set(crane);
@@ -82,11 +62,15 @@ const DataStore = {
   },
 
   async deleteCrane(id) {
-    await db.collection('cranes').doc(id).delete();
-    /* 紐づくメンテナンス記録も削除 */
-    const snap = await db.collection('maintenance').where('craneId', '==', id).get();
     const batch = db.batch();
-    snap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(db.collection('cranes').doc(id));
+
+    const collections = ['maintenance', 'inspections', 'repairs'];
+    for (const name of collections) {
+      const snap = await db.collection(name).where('craneId', '==', id).get();
+      snap.docs.forEach(d => batch.delete(d.ref));
+    }
+
     await batch.commit();
   },
 
@@ -202,11 +186,20 @@ const DataStore = {
      ユーティリティ
      ============================================================ */
 
-  async _generateCraneId() {
-    const cranes = await this.getCranes();
-    const nums   = cranes.map(c => parseInt(c.id.replace('CRANE-', ''), 10)).filter(n => !isNaN(n));
-    const max    = nums.length ? Math.max(...nums) : 0;
-    return 'CRANE-' + String(max + 1).padStart(3, '0');
+  async _ensureSignedIn() {
+    if (!window.firebase?.auth) return;
+
+    /* 既存セッション（管理者ログイン含む）の復元を待つ。
+       待たずに匿名ログインすると管理者セッションを上書きしてしまう。 */
+    const user = await new Promise(resolve => {
+      const unsubscribe = firebase.auth().onAuthStateChanged(u => {
+        unsubscribe();
+        resolve(u);
+      });
+    });
+    if (user) return;
+
+    await firebase.auth().signInAnonymously();
   },
 
   _generateId(prefix = 'ID') {

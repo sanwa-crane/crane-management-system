@@ -5,7 +5,7 @@
 let sortOrder = 'asc'; // 'asc' | 'desc'
 
 document.addEventListener('DOMContentLoaded', async () => {
-  if (!Auth.requireAuth()) return;
+  if (!(await Auth.requireAuth())) return;
   try {
     await DataStore.init();
     await renderCranes();
@@ -48,10 +48,10 @@ async function renderCranes() {
         <div class="card-body">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-sm)">
             <div>
-              <div style="font-size:var(--font-size-xl);font-weight:700;color:var(--color-primary)">${crane.vehicleNumber}</div>
-              <div style="color:var(--color-text-muted)">${crane.tonnage || '—'} ／ ${crane.maker || '—'} ／ ${crane.model || '—'}</div>
+              <div style="font-size:var(--font-size-xl);font-weight:700;color:var(--color-primary)">${safeText(crane.vehicleNumber)}</div>
+              <div style="color:var(--color-text-muted)">${safeText(crane.tonnage)} ／ ${safeText(crane.maker)} ／ ${safeText(crane.model)}</div>
               <div style="margin-top:var(--sp-xs)">
-                <span class="badge ${statusBadge[crane.status] || 'badge-muted'}">${statusMap[crane.status] || crane.status}</span>
+                <span class="badge ${statusBadge[crane.status] || 'badge-muted'}">${escapeHtml(statusMap[crane.status] || crane.status)}</span>
                 <span class="badge badge-primary" style="margin-left:4px"><i class="fas fa-clipboard-list"></i> ${records.length}件</span>
               </div>
             </div>
@@ -84,7 +84,7 @@ function openCraneModal(craneId) {
         </div>
         <div class="modal-body">
           <div class="form-group"><label class="form-label">車番 <span class="required">*</span></label>
-            <input type="text" class="form-control" id="cVehicleNumber" value="${crane ? crane.vehicleNumber : ''}" placeholder="例：奈良100 あ 1234" required></div>
+            <input type="text" class="form-control" id="cVehicleNumber" value="${escapeAttr(crane ? crane.vehicleNumber : '')}" placeholder="例：奈良100 あ 1234" required></div>
           <div class="form-group"><label class="form-label">メーカー</label>
             <select class="form-control" id="cMaker">
               <option value="">— 選択してください —</option>
@@ -93,9 +93,9 @@ function openCraneModal(craneId) {
               ).join('')}
             </select></div>
           <div class="form-group"><label class="form-label">トン数 <span class="required">*</span></label>
-            <input type="text" class="form-control" id="cTonnage" value="${crane ? (crane.tonnage || '') : ''}" placeholder="例：25t" required></div>
+            <input type="text" class="form-control" id="cTonnage" value="${escapeAttr(crane ? (crane.tonnage || '') : '')}" placeholder="例：25t" required></div>
           <div class="form-group"><label class="form-label">型番・型式</label>
-            <input type="text" class="form-control" id="cModel" value="${crane ? (crane.model || '') : ''}" placeholder="例：GR-250N"></div>
+            <input type="text" class="form-control" id="cModel" value="${escapeAttr(crane ? (crane.model || '') : '')}" placeholder="例：GR-250N"></div>
           <div class="form-group"><label class="form-label">ステータス</label>
             <select class="form-control" id="cStatus">
               <option value="active"      ${crane && crane.status === 'active'      ? 'selected' : ''}>稼働中</option>
@@ -103,7 +103,7 @@ function openCraneModal(craneId) {
               <option value="retired"     ${crane && crane.status === 'retired'     ? 'selected' : ''}>引退</option>
             </select></div>
           <div class="form-group"><label class="form-label">備考</label>
-            <textarea class="form-control" id="cNotes" rows="3">${crane ? (crane.notes || '') : ''}</textarea></div>
+            <textarea class="form-control" id="cNotes" rows="3">${escapeHtml(crane ? (crane.notes || '') : '')}</textarea></div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-outline" onclick="document.getElementById('craneModal').remove()">キャンセル</button>
@@ -137,7 +137,7 @@ async function saveCrane(craneId) {
 
 function deleteCrane(craneId) {
   DataStore.getCrane(craneId).then(crane => {
-    showConfirm(`「${crane.vehicleNumber}」を削除しますか？<br>紐づくメンテナンス記録もすべて削除されます。`, async () => {
+    showConfirm(`「${escapeHtml(crane.vehicleNumber)}」を削除しますか？<br>紐づくメンテナンス・点検・修理記録もすべて削除されます。`, async () => {
       await DataStore.deleteCrane(craneId);
       showToast('クレーンを削除しました', 'success');
       await renderCranes();
@@ -158,8 +158,8 @@ function showQrModal(craneId) {
           <button class="modal-close" onclick="document.getElementById('qrModal').remove()">×</button>
         </div>
         <div class="modal-body">
-          <div style="font-size:var(--font-size-lg);font-weight:700;color:var(--color-primary);margin-bottom:4px">${crane.vehicleNumber}</div>
-          <div style="color:var(--color-text-muted);margin-bottom:var(--sp-md)">${crane.tonnage || ''}</div>
+          <div style="font-size:var(--font-size-lg);font-weight:700;color:var(--color-primary);margin-bottom:4px">${safeText(crane.vehicleNumber)}</div>
+          <div style="color:var(--color-text-muted);margin-bottom:var(--sp-md)">${safeText(crane.tonnage, '')}</div>
           <div id="qrCodeWrap" style="display:flex;justify-content:center;margin-bottom:var(--sp-md)"></div>
           <div style="font-size:var(--font-size-xs);color:var(--color-text-muted);word-break:break-all" id="qrUrlText"></div>
         </div>
