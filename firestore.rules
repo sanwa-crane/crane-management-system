@@ -19,21 +19,27 @@ service cloud.firestore {
       allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.craneId is string;
-      allow update, delete: if isAdmin();
+      /* 現場での誤入力をその場で取り消せるよう、削除は匿名ユーザーにも許可する */
+      allow delete: if signedIn();
+      allow update: if isAdmin();
     }
 
     match /inspections/{recordId} {
       allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.craneId is string;
-      allow update, delete: if isAdmin();
+      /* 現場での誤入力をその場で取り消せるよう、削除は匿名ユーザーにも許可する */
+      allow delete: if signedIn();
+      allow update: if isAdmin();
     }
 
     match /repairs/{recordId} {
       allow read: if signedIn();
       allow create: if signedIn()
         && request.resource.data.craneId is string;
-      allow update, delete: if isAdmin();
+      /* 現場での誤入力をその場で取り消せるよう、削除は匿名ユーザーにも許可する */
+      allow delete: if signedIn();
+      allow update: if isAdmin();
     }
 
     match /{document=**} {
