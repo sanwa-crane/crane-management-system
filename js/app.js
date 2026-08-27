@@ -160,7 +160,7 @@ function renderHeader(el, subtitle = '', isAdmin = false) {
   el.innerHTML = `
     <a class="header-brand" href="${isAdmin ? 'admin-dashboard.html' : '#'}">
       <img class="header-logo"
-           src="https://sanwa-crane.github.io/crane-management-system/assets/logo4.png"
+           src="assets/logo4.png"
            alt="サンワクレーン"
            onerror="this.style.display='none'">
       <div class="header-brand-text">
